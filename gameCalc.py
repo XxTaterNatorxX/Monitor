@@ -55,13 +55,13 @@ def runTheHour(units, areas):
                         #add opinion
                         for p in range(len(current_area.units)):
                             if p != j: #not this person
-                                current_unit.opinons[p].op -= 10
+                                current_unit.opinons[p].op -= 20
                                 current_unit.trust -= 5
-                                if current_unit.trust < 0:
-                                    current_unit.trust = 0
-                                current_unit.independence += 2
-                                if current_unit.independence > 20:
-                                    current_unit.independence = 20
+                        if current_unit.trust < 0:
+                            current_unit.trust = 0
+                        current_unit.independence += 2
+                        if current_unit.independence > 20:
+                            current_unit.independence = 20
 
                 #they see a weapon
                 for k in range(len(current_area.units)):
@@ -69,7 +69,7 @@ def runTheHour(units, areas):
                         if current_area.units[k].items[p] != None:
                             if current_area.units[k].items[p] != None:
                                 move_chance += 10
-                                current_unit.opinons[current_area.units[k].id - 1].op -= 2
+                                current_unit.opinons[current_area.units[k].id - 1].op -= 10
                 
                 #there is no tasks left and no items
                 if current_area.easy_tasks + current_area.med_tasks + current_area.hard_tasks <= 0 and not search_possible:
@@ -86,9 +86,23 @@ def runTheHour(units, areas):
 
                 #attack a unit
                 attack_chance = 0
-
+                for k in range(len(current_unit.opinions)):
+                    for p in range(len(current_area.units)):
+                        if current_unit.opinons[k].op <= 20 and current_unit.opinons[k].id == current_area.units[p].id:
+                            #attack chance way up
+                            attack_chance += 70
                 #check items
-
+                for k in range(len(current_area.units)):
+                    for p in range(len(current_area.units[k].items)):
+                        if current_area.units[k].items[p].area == current_area.id:
+                            #remove item and grant the amount of points HIDDEN STUFF CAN NOT CONTAIN THESE ITEMS IG
+                            #check lv and give to stats
+                            if current_area.units[k].items[p].lv == 1:
+                                current_area.med_tasks -= 1
+                                current_area.units[k].items[p] = None
+                            if current_area.units[k].items[p].lv == 2:
+                                current_area.hard_tasks -= .5
+                                current_area.units[k].items[p] = None
                 #need to remove opinions on dead people set to 50
 
                 #do attack
