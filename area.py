@@ -12,6 +12,7 @@ class area():
     camera = False
     progress = 0
     needed = 0
+    easy_limit = 0
 
     def __init__(self, id):
         self.id = id
@@ -25,4 +26,5 @@ class area():
         self.sensor = False
         self.camera = False
         self.progress = 0
+        self.easy_limit = 0
         self.needed = 0

@@ -117,6 +117,7 @@ def defineArea(tasks):
     areas.append(sto)
     for i in range(len(areas)):
         areas[i].needed = 20 * areas[i].easy_tasks + 40 * areas[i].med_tasks + 60 * areas[i].hard_tasks
+        areas[i].easy_limit = 20 * areas[i].easy_tasks
 
 def addItems():
     for k in range(len(areas)):
