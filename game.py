@@ -263,7 +263,7 @@ def task_screen(stdscr):
             if total <= 0:
                 areas[i].needed = 1
                 areas[i].progress = 1
-            progress = math.floor(10 * (areas[i].progress / total))
+            progress = math.floor(20 * (areas[i].progress / total))
             stdscr.addstr(2 + i + space, 32, "+------------------------------------------------------------------+")
             stdscr.addstr(3 + i+ space, 33, areas[i].id)
             stdscr.addstr(3 + i+ space, 50, "[" + str("=" * progress) + ">")
