@@ -109,6 +109,10 @@ def defineArea(tasks):
                 p.easy_tasks += 1
     #add
     MR.camera = True
+    p.camera = True
+    K.camera = True
+    sto.camera = True
+    S.camera = True
     MR.sensor = True
     areas.append(MR)
     areas.append(S)
@@ -263,6 +267,7 @@ def task_screen(stdscr):
             if total <= 0:
                 areas[i].needed = 1
                 areas[i].progress = 1
+                total = 1
             progress = math.floor(20 * (areas[i].progress / total))
             stdscr.addstr(2 + i + space, 32, "+------------------------------------------------------------------+")
             stdscr.addstr(3 + i+ space, 33, areas[i].id)
@@ -330,7 +335,10 @@ def management_screen(stdscr):
             status = "DEAD"
             if not units[i].knownDead:
                 status = "ALIVE"
-            stdscr.addstr(5 + i + space, 86, status, curses.A_STANDOUT)
+            if status == "ALIVE":
+                stdscr.addstr(5 + i + space, 86, status, curses.A_ITALIC)
+            else:
+                stdscr.addstr(5 + i + space, 86, status, curses.A_STANDOUT)
             space += 1
         key = stdscr.getch()
 
@@ -384,7 +392,10 @@ def management_screen(stdscr):
                                 status = "DEAD"
                                 if not units[i].knownDead:
                                     status = "ALIVE"
-                                stdscr.addstr(5 + i + space, 86, status, curses.A_STANDOUT)
+                                if status == "ALIVE":
+                                    stdscr.addstr(5 + i + space, 86, status, curses.A_ITALIC)
+                                else:
+                                    stdscr.addstr(5 + i + space, 86, status, curses.A_STANDOUT)
                                 space += 1
                             key = stdscr.getch()
 
@@ -658,7 +669,8 @@ def camera(stdscr, area):
             space += 1
         space = 7
         for i in range(len(area.bodies)):
-            stdscr.addstr(space + i, 130, "Name: Unit #" + area.bodies[i].id)
+            print("bodies:", len(area.bodies), "in", area.id)
+            stdscr.addstr(space + i, 130, "Name: Unit #" + str(area.bodies[i].id))
             space += 1
     else:
         stdscr.addstr(1, 32, "Area: " + area.id)

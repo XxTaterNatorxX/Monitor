@@ -30,15 +30,19 @@ def runTheHour(units, areas):
     #Search chance
 
     for i in range(len(areas)):
+        am_pop = 0
         for j in range(len(areas[i].units)):
+            if j >= len(areas[i].units) - am_pop:
+                break
             current_area = areas[i]
+            print(current_area.id)
             current_unit = areas[i].units[j]
             #check if there are units
-            if current_unit.role == 0 and not len(current_area.units) == 0: #is not killer
+            if current_unit.role == 0 and not len(current_area.units) == 0 and current_unit.alive: #is not killer
                 search_possible = False
                 search_chance = 0
                 task_chance = 0
-                #decide wheter to search
+                #decide whether to search
                 if len(current_area.items) > 0 and not (len(current_unit.items) == 2 or (len(current_unit.items) == 1 and len(current_unit.hidden_items) == 1)):
                     search_possible = True
                 if search_possible:
@@ -78,7 +82,7 @@ def runTheHour(units, areas):
                                 current_unit.opinions[current_area.units[k].id - 1].op -= 10
                 
                 #there is no tasks left and no items
-                if current_area.easy_tasks + current_area.med_tasks + current_area.hard_tasks <= 0 and not search_possible:
+                if current_area.easy_tasks + current_area.med_tasks + current_area.hard_tasks <= 0 and not search_possible: #HERE IS AN ISSUE
                     move_chance += 1000
 
                 #do nothing
@@ -99,16 +103,33 @@ def runTheHour(units, areas):
                             attack_chance += 70
                 #check items
                 for k in range(len(current_area.units)):
+                    print("total units:", len(current_area.units))
+                    print("unit:", current_area.units[k].id, "in", current_area.id)
+                    for rt in range(len(current_area.units[k].items)):
+                                print(current_area.units[k].items[rt].id)
+                    pop = 0
                     for p in range(len(current_area.units[k].items)):
+                        p -= pop
                         if current_area.units[k].items[p].area == current_area.id and len(current_area.units[k].items) > 0:
                             #remove item and grant the amount of points HIDDEN STUFF CAN NOT CONTAIN THESE ITEMS IG
                             #check lv and give to stats
-                            if current_area.units[k].items[p].lv == 1:
-                                current_area.progress += 40
-                                current_area.units[k].items[p] = None
-                            if current_area.units[k].items[p].lv == 2:
-                                current_area.progress += 30
-                                current_area.units[k].items[p] = None
+                            if not current_area.units[k].items[p] == None:
+                                if current_area.units[k].items[p].lv == 1:
+                                    current_area.progress += 40
+                                    current_area.units[k].items.pop(p)
+                                    pop += 1
+                                elif current_area.units[k].items[p].lv == 2:
+                                    current_area.progress += 30
+                                    current_area.units[k].items.pop(p)
+                                    pop += 1
+                        if len(current_area.units[k].hidden_items) > 0:
+                            if current_area.units[k].hidden_items[0].area == current_area.id:
+                                if current_area.units[k].hidden_items[0].lv == 1:
+                                    current_area.progress += 40
+                                    current_area.units[k].hidden_items.pop(0)
+                                elif current_area.units[k].hidden_items[0].lv == 2:
+                                    current_area.progress += 30
+                                    current_area.units[k].items.pop(0)
                 #need to remove opinions on dead people set to 50 #remove?
 
                 #do attack
@@ -125,7 +146,7 @@ def runTheHour(units, areas):
                         random_item = random.randint(0, len(current_area.items) - 1)
                         found_item = current_area.items[random_item]
                         #Now do I hide the item
-                        if found_item.dmg > 0 and current_unit.independence > 10:
+                        if found_item.dmg > 0 and current_unit.independence > 10 and len(current_unit.hidden_items) < 1:
                             current_unit.hidden_items.append(found_item)
                         else:
                             current_unit.items.append(found_item)
@@ -145,8 +166,11 @@ def runTheHour(units, areas):
                     #do move
                     x = random.randint(0, len(areas) - 1)
                     for unitk in range(len(current_area.units)):
-                        if current_area.units[unitk].id == current_unit.id:
-                            current_area.units.pop(unitk)
+                        if unitk < len(current_area.units) - am_pop:
+                            if current_area.units[unitk].id == current_unit.id:
+                                current_area.units.pop(unitk)
+                                am_pop += 1
+                                break
                     areas[x].units.append(current_unit)
                     current_unit.lastArea = current_unit.location
                     current_unit.location = areas[x]
@@ -155,16 +179,29 @@ def runTheHour(units, areas):
                     current_unit.directive = 100
                 elif choice < attack_chance + lazy_chance + move_chance + task_chance + search_chance:
                     #attack Figure ts out
+                    done_attack = False
                     for k in range(len(current_unit.opinions)):
                         for p in range(len(current_area.units)):
                             for item in range(len(current_unit.items)):
-                                for hitem in range(len(current_unit)):
-                                    if current_unit.opinons[k].op <= 20 and current_unit.opinions[k].id == current_area.units[p].id and (current_unit.items[item].dmg > 0 or current_unit.hidden_items[hitem].dmg > 0):
+                                for hitem in range(len(current_unit.hidden_items)):
+                                    if current_unit.opinions[k].op <= 20 and current_unit.opinions[k].id == current_area.units[p].id and (current_unit.items[item].dmg > 0 or current_unit.hidden_items[hitem].dmg > 0):
                                         current_area.units[p].alive = False
-                                        current_area.bodies.append(current_area.units[p])
                                         #kill in units too
                                         for person in range(len(units)):
                                             if units[person].id == current_area.units[p].id:
                                                 units[person].alive = False
+                                        done_attack = True
+                        if done_attack:
+                            for dead_item in range(len(current_area.units[p].items)):
+                                current_area.items.append(current_area.units[p].items[dead_item])
+                            current_area.units[p].items.clear()
+                            if len(current_area.units[p].hidden_items) > 0:
+                                current_area.items.append(current_area.units[p].hidden_items[0])
+                                current_area.units[p].hidden_items.clear()
+                            done_attack = False
+                    current_area.bodies = []
+                    for k in range(len(current_area.units)):
+                        if not current_area.units[k].alive:
+                            current_area.bodies.append(current_area.units[k])
             elif current_unit.role == 1 and not len(current_area.units) == 0:
                 print("bad guy")
